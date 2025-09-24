@@ -1,0 +1,85 @@
+This is a nice LC problem because it seems easy - and is easy to solve suboptimally - but the optimal solution is quite difficult.
+
+In the suboptimal solution, you merge the two arrays, sort them, and find the middle number. The only challenge is finding what
+'middle number' means - it turns out that for an array of odd-numbered length it's (arr.length - 1) / 2, and for an even-numbered
+length it's the average of the two middle numbers arr.length / 2 and arr.length / 2 - 1. 
+
+This works but it doesn't meet the time complexity requirements:
+
+- Sorting is O(n log n)
+- We need to merge arrays of length m and n prior to sorting which is O(m + n)
+- So the time complexity is O((m + n) log(m + n)) - too slow.
+
+We know that we're dealing with sorted arrays of numbers, so the obvious choice for speeding up our implementation is a binary search. The way
+that binary search works is that we can speed up searching a sorted array by partitioning it, looking at one half, and throwing away the
+other half if it doesn't meet our criteria - if we're looking for 5 and we get a 6, we know we don't need to look at any sorted value above 6.
+
+It's not obvious how a binary search applies here though. We aren't looking for a number, but rather for the correct midpoint of 
+some numbers. Also, our array is already split up in two pieces. Do we split them up further?
+
+To answer that question it's worth considering what is meant by 'median'. Enter Wikipedia:
+
+"Middle value separating the greater and lesser halves of a data set"
+
+We're looking for two halves of a data set: when we find that, we find the median.
+
+We already have two possible halves of the dataset, and we know that they're ordered: going from left to right, each of the numbers in each half will
+only increase. But they aren't ordered in the way we want them to be yet: we want to construct two halves such that all of the numbers in the right
+part of the dataset are larger than all of the numbers in the left dataset. Once we have that, we can find our median! 
+
+More concretely, we want to be able to go from a test case like this:
+
+[1, 3, 5] | [2, 4, 6]
+
+to these halves: 
+
+[1, 2, 3] | [4, 5, 6]
+
+One slight complication is that we can't rely on the array halves we get given being the right size, as they were there. They might look like this:
+
+[1, 4] | [2, 3, 5, 6]
+
+In that case, we'd need to determine what the correct size for our halves is. This is pretty simple, and we already figured it out in the first step.
+Since we have 6 numbers, we know we need each half to be of length 3. To summarize:
+
+- We want to take the two incorrect halves we've been given and build two new halves that represent the upper and lower parts of the dataset
+- We can figure out how long those halves need to be 
+- We know that the halves are ordered internally
+
+This gives us everything we need to solve the problem: how do we take our mixed-up halves and produce two properly sorted halves?
+
+To do so, let's start incrementally building up our two halves. We know that one array is smaller than the other (its max is lower) and that the 
+arrays are sorted. So it seems reasonable to start by looking at the left half of the left array and building up from there.
+
+We have three elements in our left array. Let's start by taking one element from it. We're looking to construct halves of an array of length 6,
+so if we're taking one element from the left we'll need two from the right:
+
+[1] [3, 5] | [2, 4] [6] <- how we're partitioning
+[1, 2, 4]  | [3, 5, 6]  <- what our new array would look like
+
+How do we test if our new possible array is correct? We can't iterate over it, but we can rely on the fact that it's ordered, meaning we can get
+the max and min in O(1) time. If the array is correct, then the max of our left array will be lower than the min of the right array.
+
+Hmm, for our first array it looks like that doesn't hold:
+
+[1, 2, 4]  | [3, 5, 6] <- max left element (4) is bigger than min right element (3)!
+
+In this case, taking just one element from the original left array and two from the right didn't work. Let's try again - this time we'll try taking
+two elements from the array*. So now we'll have:
+
+[1, 3] [5] | [2] [4, 6] <- how we're partitioning
+[1, 3, 2]  | [2, 4, 6]  <- what our new array would look like
+
+Let's test again:
+
+[1, 2, 4]  | [3, 5, 6] <- max left element (4) is smaller than min right element (3)
+
+We've found our halves! 
+
+Now we just need to find the midpoint, which we already know how to do from the naive solution: this is an even-length array so we average the 
+max left element and min right element. If it was odd-numbered we'd just split it like this [1, 2, 3] [4, 5] and take the max left element*. 
+So this gives us our solution: 3.5.
+
+---
+
+*This is the binary search step: in this case since it's a left array of length 3 we just take one more
