@@ -1,10 +1,9 @@
-// extract the parts of a number as an array: 3789 -> [3000, 700, 80, 9]
-function getDecimals(num: number) {
+function getDecimals(num: number): number[] {
   return num
     .toString()
     .split("")
     .map((el, i, arr) => ({
-      num: Number(el),
+      num: Number(el),  
       zeros: arr.length - i,
     }))
     .map((el) => parseInt(el.num.toString() + "0".repeat(el.zeros - 1)));
@@ -12,17 +11,21 @@ function getDecimals(num: number) {
 
 const numerals = {
   "1000": "M",
+  "900": "CM",
   "500": "D",
+  "400": "CD",
   "100": "C",
+  "90": "XC",
   "50": "L",
+  "40": "XL",
   "10": "X",
+  "9": "IX",
   "5": "V",
-  "1": "L",
+  "4": "IV",
+  "1": "I",
 };
 
 function extract(decimal: number) {
-  // until we consume the whole number:
-  // take the largest possible bite out of it, working through our roman values from largest to smallest
   let current = decimal;
   let roman = "";
 
@@ -54,5 +57,3 @@ function intToRoman(num: number) {
 
   return roman;
 }
-
-console.log(intToRoman(3789));
